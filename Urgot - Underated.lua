@@ -92,7 +92,8 @@ function OnLoad()
   Config.comboConfig:addParam("Q", "Use Q", SCRIPT_PARAM_ONOFF, true)
   Config.comboConfig:addParam("W", "Use W", SCRIPT_PARAM_ONOFF, true)
   Config.comboConfig:addParam("E", "Use E", SCRIPT_PARAM_ONOFF, true)
-  Config.comboConfig:addParam("R", "Use R", SCRIPT_PARAM_ONOFF, true)
+  Config.comboConfig:addParam("QSpam", "Use Q only if E'd", SCRIPT_PARAM_ONOFF, true)
+  --Config.comboConfig:addParam("R", "Use R", SCRIPT_PARAM_ONOFF, true)
   Config.comboConfig:addParam("items", "Use Items", SCRIPT_PARAM_ONOFF, true)
 
   Config:addSubMenu("Ult Settings", "rConfig")
@@ -189,13 +190,6 @@ function OnTick()
   local target
   target = GetCustomTarget()
   
-  if Config.rConfig.r then
-    local enemies = EnemiesAround(myHero, data[3].width)
-    if enemies >= Config.rConfig.toomanyenemies then
-      CastR(CastPosition, target)
-    end
-  end
-
   if Config.KS.enableKS then 
     Killsteal()
   end
@@ -214,18 +208,42 @@ function OnTick()
 end
 
 function Farm()
+function LastHit()
+  if QReady() and Config.farmConfig.lh.Q then
+    for i, minion in pairs(minionManager(MINION_ENEMY, data[0].range, myHero, MINION_SORT_HEALTH_ASC).objects) do
+      local QMinionDmg = GetDmg("Q", minion)
+      if QMinionDmg >= minion.health and ValidTarget(minion, data[0].range) then
+        CastQ(minion)
+      end
+    end
+  end
+  if EReady() and Config.farmConfig.lh.E then    
+    for i, minion in pairs(minionManager(MINION_ENEMY, 825, myHero, MINION_SORT_HEALTH_ASC).objects) do    
+      local EMinionDmg = GetDmg("E", minion, GetMyHero())      
+      if EMinionDmg >= minion.health and ValidTarget(minion, data[2].range) then
+        CastE(minion)
+      end      
+    end    
+  end  
+end
 end
 
 function Combo()
-
+	if EReady() and Config.comboConfig.E then
+		CastE(Target)
+	end
+	if Config.comboConfig.Q and not Config.comboConfig.QSpam then
+		CastQ(Target)
+	end
+	if Config.comboConfig.W then
+		CastW(Target)
+	end
+	if IsCorroded(Target) and Config.comboConfig.Q  and Config.comboConfig.QSpam then
+		CastQ(Target)
+	end
 end
 
 function Harrass()
-end
-
-function EnemiesAround(Unit, range)
-  local c=0
-  for i=1,heroManager.iCount do hero = heroManager:GetHero(i) if hero.team ~= myHero.team and hero.x and hero.y and hero.z and GetDistance(hero, Unit) < range then c=c+1 end end return c
 end
 
 function Killsteal()
@@ -237,10 +255,8 @@ function Killsteal()
     if ValidTarget(enemy) and enemy ~= nil and not enemy.dead and enemy.visible then
       if enemy.health < qDmg and Config.KS.killstealQ and ValidTarget(enemy, data[0].range) then
         CastQ(enemy)
-      elseif enemy.health < eDmg and Config.KS.killstealE and ValidTarget(enemy, data[2].range) then
+      elseif enemy.health < eDmg and Config.KS.killstealE and ValidTarget(enemy, data[1].range) then
         CastE(enemy)
-      elseif enemy.health < rDmg and Config.KS.killstealR and ValidTarget(enemy, data[3].range) then
-        CastR(enemy)
       elseif enemy.health < iDmg and Config.KS.killstealI and ValidTarget(enemy, 600) and IReady then
         CCastSpell(Ignite, enemy)
       end
@@ -248,16 +264,33 @@ function Killsteal()
   end
 end
 
-function CastQ(unit)
+function IsCorroded(target)
+	return HasBuff(target, "urgotcorrosivedebuff")
 end
 
-function CastW(unit)
+function CastQ(unit) 
+  if unit == nil then return end
+  local CastPosition, HitChance, Position = UPL:Predict(_Q, myHero, unit)
+  if IsCorroded(unit) or HitChance and HitChance >= 1.5 and QReady() then
+    CCastSpell(_Q, CastPosition.x, CastPosition.z)
+  end
 end
 
-function CastE(unit)
+function CastW(unit) 
+  if unit == nil then return end
+  CCastSpell(_W, myHero.x, myHero.z)
+end
+
+function CastE(unit) 
+  if unit == nil then return end
+  local CastPosition, HitChance, Position = UPL:Predict(_E, myHero, unit)
+  if HitChance and HitChance >= 1.2 and EReady() then
+    CCastSpell(_E, CastPosition.x, CastPosition.z)
+  end
 end
 
 function CastR(unit)
+--Not support yet
 end
 
 local CastableItems = {
