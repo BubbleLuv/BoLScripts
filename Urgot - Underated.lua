@@ -15,12 +15,12 @@
 local version = 0.01
 local AUTO_UPDATE = true
 local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/berbb/BoL/master/Urgot - Underated.lua".."?rand="..math.random(1,10000)
+local UPDATE_PATH = "/berbb/BoLScripts/master/Urgot - Underated.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH.."Urgot - Underated.lua"
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 local function TopKekMsg(msg) print("<font color=\"#6699ff\"><b>[ADC Series]: Urgot - </b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTO_UPDATE then
-  local ServerData = GetWebResult(UPDATE_HOST, "/berbb/BoL/master/Urgot.version")
+  local ServerData = GetWebResult(UPDATE_HOST, "/berbb/BoLScripts/master/Urgot.version")
   if ServerData then
     ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
     if ServerVersion then
@@ -217,6 +217,7 @@ function Farm()
 end
 
 function Combo()
+
 end
 
 function Harrass()
@@ -232,7 +233,6 @@ function Killsteal()
     local enemy = heroManager:GetHero(i)
     local qDmg = ((getDmg("Q", enemy, myHero)) or 0)  
     local eDmg = ((getDmg("E", enemy, myHero)) or 0)  
-    local rDmg = ((getDmg("R", enemy, myHero)) or 0)
     local iDmg = 50 + (20 * myHero.level) / 5
     if ValidTarget(enemy) and enemy ~= nil and not enemy.dead and enemy.visible then
       if enemy.health < qDmg and Config.KS.killstealQ and ValidTarget(enemy, data[0].range) then
@@ -321,9 +321,6 @@ function OnDraw()
   end
   if Config.Drawing.ERange then
     DrawCircle(myHero.x, myHero.y, myHero.z, data[2].range+data[2].width/4, 0x111111)
-  end
-  if Config.Drawing.RRange then
-    DrawCircle(myHero.x, myHero.y, myHero.z, data[3].range+data[3].width/4, 0x111111)
   end
   if Config.Drawing.DmgCalcs then
         for i = 1, enemyCount do
