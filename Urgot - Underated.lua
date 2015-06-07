@@ -8,7 +8,7 @@
               __/ |                                                                     
              |___/                                                                      
 			 
-    By Berb
+    By Berb - Nulled.io
 ]]--
 
 --[[ Auto updater start ]]--
