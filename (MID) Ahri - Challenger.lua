@@ -2,7 +2,7 @@
 
 Challenger Ahri Reborn
 By LucasRP a.k.a DaVinci
-Version: 1.31
+Version: 1.314
 
 Cracked by Berb
 
